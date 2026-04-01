@@ -31,57 +31,67 @@ const server = new ApolloServer({
 
 // Singleton initialization to prevent race conditions in serverless
 let isInitialized = false;
+let initializationPromise: Promise<void> | null = null;
+
 const initialize = async () => {
     if (isInitialized) return;
+    if (initializationPromise) return initializationPromise;
 
-    try {
-        console.log('🚀 Finalizing Initialization - Starting...');
+    initializationPromise = (async () => {
+        try {
+            console.log('🚀 Finalizing Initialization - Starting...');
+            
+            // 1. Start Apollo Server
+            await server.start();
+            console.log('✅ Apollo Server: Initialized');
+            
+            // 2. Connect to Database
+            await connectDB();
+            console.log('✅ MongoDB Atlas: Connected');
 
-        // 1. Start Apollo Server
-        await server.start();
-        console.log('✅ Apollo Server: Initialized');
+            // 3. Middlewares
+            app.use(cors({
+                origin: ['https://kisan-eta.vercel.app', 'http://localhost:5173'],
+                methods: ['GET', 'POST', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'Authorization'],
+                credentials: true
+            }));
+            // Increase limit for image uploads (Vercel has 4.5MB limit)
+            app.use(express.json({ limit: '5mb' }));
+            app.use(express.urlencoded({ limit: '5mb', extended: true }));
 
-        // 2. Connect to Database
-        await connectDB();
-        console.log('✅ MongoDB Atlas: Connected');
-
-        // 3. Middlewares
-        app.use(cors({
-            origin: ['https://kisan-eta.vercel.app', 'http://localhost:5173'],
-            methods: ['GET', 'POST', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization'],
-            credentials: true
-        }));
-        app.use(express.json());
-
-        // 4. GraphQL Endpoint
-        app.use('/graphql', expressMiddleware(server, {
-            context: async ({ req }) => {
-                const token = req.headers.authorization || '';
-                if (token) {
-                    try {
-                        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
-                        const user = await User.findById(decoded.id).select('-password');
-                        return { user };
-                    } catch (err) {
-                        console.error('Invalid token');
+            // 4. GraphQL Endpoint
+            app.use('/graphql', expressMiddleware(server, {
+                context: async ({ req }) => {
+                    const token = req.headers.authorization || '';
+                    if (token) {
+                        try {
+                            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
+                            const user = await User.findById(decoded.id).select('-password');
+                            return { user };
+                        } catch (err) {
+                            console.error('Invalid token');
+                        }
                     }
-                }
-                return {};
-            },
-        }));
+                    return {};
+                },
+            }));
 
-        // 5. Catch-all for Base URL
-        app.get('/', (_req, res) => {
-            res.send('Kisan Marketplace API - Ready and Healthy');
-        });
+            // 5. Catch-all for Base URL
+            app.get('/', (_req, res) => {
+                res.send('Kisan Marketplace API - Ready and Healthy');
+            });
 
-        isInitialized = true;
-        console.log('🏁 Initialization: Complete');
-    } catch (err: any) {
-        console.error('❌ CRITICAL: Initialization Failed:', err.message);
-        throw err;
-    }
+            isInitialized = true;
+            console.log('🏁 Initialization: Complete');
+        } catch (err: any) {
+            console.error('❌ CRITICAL: Initialization Failed:', err.message);
+            initializationPromise = null; // Allow retry on next request
+            throw err;
+        }
+    })();
+
+    return initializationPromise;
 };
 
 // Local development server logic
