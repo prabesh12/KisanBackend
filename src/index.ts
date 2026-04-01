@@ -11,23 +11,20 @@ import jwt from 'jsonwebtoken';
 import User from './models/User.js';
 
 // In production (Vercel), environment variables are provided directly by the platform.
-if (process.env.NODE_ENV !== 'production') {
-    dotenv.config({
-        path: '.env.development',
-        override: true
-    });
-}
-
+dotenv.config({
+    path: process.env.NODE_ENV === 'production' ? '.env' : '.env.development',
+    override: true
+});
 const app = express();
 
 const server = new ApolloServer({
     typeDefs,
     resolvers,
     plugins: [
-        ApolloServerPluginLandingPageLocalDefault({ 
+        ApolloServerPluginLandingPageLocalDefault({
             embed: true,
             // Ensure playground is always available for easier debugging
-            footer: false 
+            footer: false
         }),
     ],
 });
@@ -36,14 +33,14 @@ const server = new ApolloServer({
 let isInitialized = false;
 const initialize = async () => {
     if (isInitialized) return;
-    
+
     try {
         console.log('🚀 Finalizing Initialization - Starting...');
-        
+
         // 1. Start Apollo Server
         await server.start();
         console.log('✅ Apollo Server: Initialized');
-        
+
         // 2. Connect to Database
         await connectDB();
         console.log('✅ MongoDB Atlas: Connected');
