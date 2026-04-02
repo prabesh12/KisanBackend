@@ -44,6 +44,7 @@ const typeDefs = gql`
     category: String!
     listingType: String!
     exchangePreference: String
+    contactNumbers: [String!]!
     photos: [String!]!
     location: Location!
     seller: User!
@@ -93,6 +94,7 @@ const typeDefs = gql`
       category: String!
       listingType: String!
       exchangePreference: String
+      contactNumbers: [String!]!
       photos: [String!]!
       location: LocationInput!
     ): Product!
@@ -104,6 +106,12 @@ const typeDefs = gql`
       price: Float
       quantity: Float
       unit: String
+      category: String
+      listingType: String
+      exchangePreference: String
+      contactNumbers: [String!]
+      photos: [String!]
+      location: LocationInput
       status: String
     ): Product!
 

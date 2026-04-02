@@ -9,6 +9,7 @@ export interface IProduct extends Document {
   category: string;
   listingType: 'sell' | 'exchange' | 'free';
   exchangePreference?: string;
+  contactNumbers: string[];
   photos: string[];
   location: {
     coordinates: {
@@ -38,6 +39,7 @@ const ProductSchema: Schema = new Schema({
     default: 'sell' 
   },
   exchangePreference: { type: String },
+  contactNumbers: [{ type: String }],
   photos: [{ type: String }],
   location: {
     coordinates: {
