@@ -10,10 +10,11 @@ const generateToken = (id: string) => {
 
 const resolvers = {
   Query: {
-    getProducts: async (_: any, { category, listingType, search, limit = 10, skip = 0 }: any) => {
+    getProducts: async (_: any, { category, listingType, search, sellerId, limit = 10, skip = 0 }: any) => {
       const query: any = {};
       if (category) query.category = category;
       if (listingType) query.listingType = listingType;
+      if (sellerId) query.seller = sellerId;
       if (search) {
         query.$or = [
           { name: { $regex: search, $options: 'i' } },
@@ -29,6 +30,9 @@ const resolvers = {
         await product.save();
       }
       return product;
+    },
+    getUser: async (_: any, { id }: any) => {
+      return await User.findById(id);
     },
     me: async (_: any, __: any, context: any) => {
       if (!context.user) return null;

@@ -65,10 +65,12 @@ const typeDefs = gql`
       category: String
       listingType: String
       search: String
+      sellerId: String
       limit: Int
       skip: Int
     ): [Product!]!
     getProduct(id: ID!): Product
+    getUser(id: ID!): User
     me: User
   }
 
