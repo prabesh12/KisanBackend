@@ -11,6 +11,7 @@ export interface IProduct extends Document {
   exchangePreference?: string;
   contactNumbers: string[];
   photos: string[];
+  thumbnail?: string;
   location: {
     coordinates: {
       lat: number;
@@ -41,6 +42,7 @@ const ProductSchema: Schema = new Schema({
   exchangePreference: { type: String },
   contactNumbers: [{ type: String }],
   photos: [{ type: String }],
+  thumbnail: { type: String },
   location: {
     coordinates: {
       lat: { type: Number, required: true },
@@ -62,6 +64,13 @@ const ProductSchema: Schema = new Schema({
   views: { type: Number, default: 0 },
   tags: [{ type: String }],
   createdAt: { type: Date, default: Date.now }
-});
+}, { timestamps: true });
+
+// Indices for high performance
+ProductSchema.index({ 'location.coordinates': '2dsphere' });
+ProductSchema.index({ category: 1 });
+ProductSchema.index({ listingType: 1 });
+ProductSchema.index({ status: 1 });
+ProductSchema.index({ createdAt: -1 });
 
 export default mongoose.model<IProduct>('Product', ProductSchema);

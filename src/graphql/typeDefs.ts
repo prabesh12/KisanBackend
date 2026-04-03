@@ -46,6 +46,7 @@ const typeDefs = gql`
     exchangePreference: String
     contactNumbers: [String!]!
     photos: [String!]!
+    thumbnail: String!
     location: Location!
     seller: User!
     sellerName: String!
@@ -98,6 +99,7 @@ const typeDefs = gql`
       exchangePreference: String
       contactNumbers: [String!]!
       photos: [String!]!
+      thumbnail: String
       location: LocationInput!
     ): Product!
 
@@ -113,6 +115,7 @@ const typeDefs = gql`
       exchangePreference: String
       contactNumbers: [String!]
       photos: [String!]
+      thumbnail: String
       location: LocationInput
       status: String
     ): Product!

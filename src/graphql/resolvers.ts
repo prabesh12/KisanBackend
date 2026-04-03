@@ -92,8 +92,13 @@ const resolvers = {
       const user = await User.findById(context.user.id);
       if (!user) throw new Error('User not found');
 
+      const { contactNumbers, photos, thumbnail, ...rest } = args;
+
       const product = await Product.create({
-        ...args,
+        ...rest,
+        contactNumbers,
+        photos,
+        thumbnail: thumbnail || (photos && photos[0]) || '',
         seller: user.id,
         sellerName: user.name,
       });
@@ -125,6 +130,12 @@ const resolvers = {
   Product: {
     seller: async (parent: any) => {
       return await User.findById(parent.seller);
+    },
+    thumbnail: (parent: any) => {
+      // Return stored thumbnail if available, or fallback to first photo
+      return parent.thumbnail || (parent.photos && parent.photos.length > 0 
+        ? parent.photos[0] 
+        : 'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400');
     }
   }
 };
