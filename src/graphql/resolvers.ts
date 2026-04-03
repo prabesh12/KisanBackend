@@ -10,11 +10,22 @@ const generateToken = (id: string) => {
 
 const resolvers = {
   Query: {
-    getProducts: async (_: any, { category, listingType, search, sellerId, limit = 10, skip = 0 }: any) => {
+    getProducts: async (_: any, { category, listingType, search, sellerId, status, limit = 10, skip = 0 }: any) => {
       const query: any = {};
       if (category) query.category = category;
       if (listingType) query.listingType = listingType;
       if (sellerId) query.seller = sellerId;
+      
+      // Filter by status:
+      // 1. If explicitly requested (e.g. status: 'sold')
+      // 2. OR if sellerId is provided (farmer's own listings), show all
+      // 3. OTHERWISE default to 'active' for the general marketplace
+      if (status) {
+        query.status = status;
+      } else if (!sellerId) {
+        query.status = 'active';
+      }
+
       if (search) {
         query.$or = [
           { name: { $regex: search, $options: 'i' } },

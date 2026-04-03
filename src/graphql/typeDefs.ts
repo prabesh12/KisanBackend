@@ -67,6 +67,7 @@ const typeDefs = gql`
       listingType: String
       search: String
       sellerId: String
+      status: String
       limit: Int
       skip: Int
     ): [Product!]!
